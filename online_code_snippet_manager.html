@@ -1,0 +1,474 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SnipVault - Code Snippet Manager</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d1117; --sidebar: #161b22; --card: #1c2128; --border: #30363d;
+    --text: #e6edf3; --muted: #8b949e; --accent: #58a6ff; --green: #3fb950;
+    --orange: #d29922; --red: #f85149; --purple: #bc8cff; --pink: #f778ba;
+    --radius: 8px; --mono: 'Courier New', monospace;
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+  header { background: var(--sidebar); border-bottom: 1px solid var(--border); padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .logo { font-size: 18px; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+  .logo-icon { width: 28px; height: 28px; background: var(--accent); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .header-actions { display: flex; align-items: center; gap: 12px; }
+  .btn { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.15s; }
+  .btn:hover { background: var(--card); border-color: var(--accent); }
+  .btn-primary { background: var(--accent); color: #0d1117; border-color: var(--accent); font-weight: 600; }
+  .btn-primary:hover { background: #79b8ff; border-color: #79b8ff; }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+  .btn-icon { width: 30px; height: 30px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 16px; border-radius: 6px; }
+  .layout { display: flex; flex: 1; overflow: hidden; }
+  .sidebar { width: 240px; background: var(--sidebar); border-right: 1px solid var(--border); padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; }
+  .sidebar-section { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; padding: 8px 8px 4px; margin-top: 8px; }
+  .sidebar-item { padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; transition: all 0.15s; }
+  .sidebar-item:hover, .sidebar-item.active { background: var(--card); color: var(--text); }
+  .sidebar-item.active { color: var(--accent); }
+  .sidebar-item .count { margin-left: auto; font-size: 11px; background: var(--border); padding: 1px 6px; border-radius: 10px; }
+  .lang-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .main { flex: 1; overflow-y: auto; padding: 24px; }
+  .search-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+  .search-input { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px 8px 38px; color: var(--text); font-size: 14px; outline: none; position: relative; }
+  .search-wrap { flex: 1; position: relative; }
+  .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 16px; pointer-events: none; }
+  .search-input:focus { border-color: var(--accent); }
+  .search-input::placeholder { color: var(--muted); }
+  .snippets-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+  .snippet-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: border-color 0.2s, transform 0.15s; cursor: pointer; }
+  .snippet-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .snippet-card.favorited { border-color: var(--orange); }
+  .card-header { padding: 12px 14px 10px; display: flex; align-items: flex-start; gap: 10px; }
+  .card-title { font-size: 14px; font-weight: 600; color: var(--text); flex: 1; line-height: 1.3; }
+  .card-actions { display: flex; gap: 4px; flex-shrink: 0; }
+  .fav-btn { background: none; border: none; cursor: pointer; font-size: 16px; padding: 2px; line-height: 1; color: var(--muted); transition: color 0.15s; }
+  .fav-btn.active { color: var(--orange); }
+  .fav-btn:hover { color: var(--orange); }
+  .copy-btn { background: none; border: none; cursor: pointer; font-size: 14px; padding: 2px 4px; color: var(--muted); transition: color 0.15s; border-radius: 4px; }
+  .copy-btn:hover { color: var(--accent); background: rgba(88,166,255,0.1); }
+  .card-code { background: #0d1117; padding: 10px 14px; font-family: var(--mono); font-size: 12px; line-height: 1.5; max-height: 120px; overflow: hidden; position: relative; }
+  .card-code::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 32px; background: linear-gradient(transparent, #0d1117); }
+  .card-code pre { margin: 0; white-space: pre-wrap; word-break: break-all; }
+  .card-footer { padding: 8px 14px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; border-top: 1px solid var(--border); }
+  .lang-badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+  .tag-badge { font-size: 11px; padding: 2px 7px; border-radius: 10px; background: rgba(88,166,255,0.12); color: var(--accent); border: 1px solid rgba(88,166,255,0.2); }
+  .card-date { margin-left: auto; font-size: 11px; color: var(--muted); }
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+  .empty-state .empty-icon { font-size: 48px; margin-bottom: 16px; }
+  .empty-state h3 { color: var(--text); margin-bottom: 8px; font-size: 16px; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal { background: var(--card); border: 1px solid var(--border); border-radius: 12px; width: 100%; max-width: 580px; max-height: 90vh; overflow-y: auto; }
+  .modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .modal-title { font-size: 16px; font-weight: 600; }
+  .modal-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+  .field-group { display: flex; flex-direction: column; gap: 6px; }
+  .field-label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; }
+  .field-input, .field-select, .field-textarea { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; color: var(--text); font-size: 14px; outline: none; transition: border-color 0.15s; width: 100%; }
+  .field-input:focus, .field-select:focus, .field-textarea:focus { border-color: var(--accent); }
+  .field-textarea { font-family: var(--mono); resize: vertical; min-height: 120px; }
+  .field-select option { background: var(--card); }
+  .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
+  .detail-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+  .detail-overlay.open { opacity: 1; pointer-events: all; }
+  .detail-modal { background: var(--card); border: 1px solid var(--border); border-radius: 12px; width: 100%; max-width: 720px; max-height: 90vh; overflow-y: auto; }
+  .detail-code { background: #0d1117; padding: 16px; font-family: var(--mono); font-size: 13px; line-height: 1.6; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); overflow-x: auto; }
+  .detail-code pre { margin: 0; }
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--green); color: #0d1117; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; z-index: 999; transform: translateY(60px); opacity: 0; transition: all 0.3s; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .stats-bar { display: flex; gap: 20px; margin-bottom: 18px; }
+  .stat { font-size: 13px; color: var(--muted); }
+  .stat span { color: var(--text); font-weight: 600; }
+  select, option { background: var(--card); color: var(--text); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    SnipVault
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-primary" onclick="openAddModal()">+ New Snippet</button>
+  </div>
+</header>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-section">Library</div>
+    <div class="sidebar-item active" onclick="filterSidebar('all', this)">📚 All Snippets <span class="count" id="count-all">0</span></div>
+    <div class="sidebar-item" onclick="filterSidebar('favorites', this)">⭐ Favorites <span class="count" id="count-fav">0</span></div>
+    <div class="sidebar-section">Languages</div>
+    <div id="lang-sidebar"></div>
+    <div class="sidebar-section">Tags</div>
+    <div id="tag-sidebar"></div>
+  </div>
+
+  <div class="main">
+    <div class="search-bar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" id="searchInput" placeholder="Search snippets by title, tag, or language..." oninput="renderSnippets()">
+      </div>
+      <select class="btn field-select" style="width:140px" id="sortSelect" onchange="renderSnippets()">
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+        <option value="alpha">A–Z</option>
+      </select>
+    </div>
+    <div class="stats-bar">
+      <div class="stat">Showing <span id="showing-count">0</span> snippets</div>
+    </div>
+    <div class="snippets-grid" id="snippetsGrid"></div>
+  </div>
+</div>
+
+<!-- Add Modal -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">New Snippet</div>
+      <button class="btn btn-icon" onclick="closeAddModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group">
+        <div class="field-label">Title</div>
+        <input class="field-input" id="f-title" placeholder="e.g. Binary search in Python">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Language</div>
+        <select class="field-select" id="f-lang">
+          <option value="python">Python</option>
+          <option value="javascript">JavaScript</option>
+          <option value="java">Java</option>
+          <option value="c++">C++</option>
+          <option value="html">HTML</option>
+          <option value="css">CSS</option>
+          <option value="sql">SQL</option>
+          <option value="bash">Bash</option>
+          <option value="go">Go</option>
+          <option value="rust">Rust</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Code</div>
+        <textarea class="field-textarea" id="f-code" placeholder="Paste your code here..."></textarea>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Tags (comma-separated)</div>
+        <input class="field-input" id="f-tags" placeholder="e.g. sorting, algorithm, interview">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Description (optional)</div>
+        <input class="field-input" id="f-desc" placeholder="What does this snippet do?">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeAddModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSnippet()">Save snippet</button>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="detail-overlay" id="detailModal">
+  <div class="detail-modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="d-title"></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px" id="d-date"></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn btn-sm" onclick="editCurrent()">Edit</button>
+        <button class="btn btn-sm" onclick="closeDetail()">Close</button>
+      </div>
+    </div>
+    <div style="padding:14px 24px;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--border)" id="d-badges"></div>
+    <div class="detail-code"><pre id="d-code" class="hljs"></pre></div>
+    <div style="padding:16px 24px;display:flex;gap:10px;align-items:center">
+      <button class="btn btn-primary btn-sm" onclick="copyDetailCode()">📋 Copy code</button>
+      <button class="fav-btn" id="d-fav-btn" onclick="toggleFavDetail()" style="font-size:20px"></button>
+      <button class="btn btn-sm" style="margin-left:auto;color:var(--red);border-color:var(--red)" onclick="deleteSnippet()">Delete</button>
+    </div>
+    <div style="padding:0 24px 18px;color:var(--muted);font-size:13px" id="d-desc"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const LANG_COLORS = {
+  python:'#3572A5', javascript:'#f1e05a', java:'#b07219', 'c++':'#f34b7d',
+  html:'#e34c26', css:'#563d7c', sql:'#e38c00', bash:'#89e051',
+  go:'#00ADD8', rust:'#dea584', other:'#8b949e'
+};
+const LANG_TEXT = {
+  python:'#0d1117', javascript:'#0d1117', java:'#e6edf3', 'c++'
+:'#0d1117',
+  html:'#0d1117', css:'#e6edf3', sql:'#0d1117', bash:'#0d1117',
+  go:'#0d1117', rust:'#0d1117', other:'#0d1117'
+};
+
+let snippets = JSON.parse(localStorage.getItem('snipvault') || '[]');
+let currentFilter = 'all';
+let currentLang = null;
+let currentTag = null;
+let editingId = null;
+let detailId = null;
+
+if (snippets.length === 0) {
+  snippets = [
+    { id: 1, title: 'Binary Search', lang: 'python', code: 'def binary_search(arr, target):\n    left, right = 0, len(arr) - 1\n    while left <= right:\n        mid = (left + right) // 2\n        if arr[mid] == target:\n            return mid\n        elif arr[mid] < target:\n            left = mid + 1\n        else:\n            right = mid - 1\n    return -1', tags: ['algorithm','searching','interview'], desc: 'O(log n) binary search on a sorted array', fav: true, date: Date.now() - 86400000*5 },
+    { id: 2, title: 'Fetch with async/await', lang: 'javascript', code: 'async function fetchData(url) {\n  try {\n    const res = await fetch(url);\n    if (!res.ok) throw new Error(`HTTP error: ${res.status}`);\n    const data = await res.json();\n    return data;\n  } catch (err) {\n    console.error("Fetch failed:", err);\n  }\n}', tags: ['async','api','fetch'], desc: 'Clean async API fetch with error handling', fav: false, date: Date.now() - 86400000*3 },
+    { id: 3, title: 'Fibonacci — Memoized', lang: 'python', code: 'from functools import lru_cache\n\n@lru_cache(maxsize=None)\ndef fib(n):\n    if n < 2:\n        return n\n    return fib(n-1) + fib(n-2)', tags: ['recursion','dynamic-programming','math'], desc: 'Memoized Fibonacci using Python lru_cache', fav: false, date: Date.now() - 86400000*2 },
+    { id: 4, title: 'Reverse a linked list', lang: 'java', code: 'public ListNode reverseList(ListNode head) {\n    ListNode prev = null;\n    ListNode curr = head;\n    while (curr != null) {\n        ListNode next = curr.next;\n        curr.next = prev;\n        prev = curr;\n        curr = next;\n    }\n    return prev;\n}', tags: ['linked-list','interview','pointer'], desc: 'Iterative in-place reversal, O(n) time O(1) space', fav: true, date: Date.now() - 86400000 },
+    { id: 5, title: 'SQL: Top-N per group', lang: 'sql', code: 'SELECT * FROM (\n  SELECT *,\n    ROW_NUMBER() OVER (\n      PARTITION BY category\n      ORDER BY score DESC\n    ) AS rn\n  FROM products\n) ranked\nWHERE rn <= 3;', tags: ['sql','window-function','analytics'], desc: 'Get top 3 rows per category using ROW_NUMBER()', fav: false, date: Date.now() - 3600000 },
+    { id: 6, title: 'Debounce function', lang: 'javascript', code: 'function debounce(fn, delay) {\n  let timer;\n  return function(...args) {\n    clearTimeout(timer);\n    timer = setTimeout(() => fn.apply(this, args), delay);\n  };\n}', tags: ['performance','events','utility'], desc: 'Limit how often a function fires', fav: false, date: Date.now() - 7200000 }
+  ];
+  save();
+}
+
+function save() {
+  localStorage.setItem('snipvault', JSON.stringify(snippets));
+  updateSidebar();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function getLangBadge(lang) {
+  const bg = LANG_COLORS[lang] || '#8b949e';
+  const col = LANG_TEXT[lang] || '#0d1117';
+  return `<span class="lang-badge" style="background:${bg};color:${col}">${lang}</span>`;
+}
+
+function getFiltered() {
+  let list = [...snippets];
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  if (currentFilter === 'favorites') list = list.filter(s => s.fav);
+  if (currentLang) list = list.filter(s => s.lang === currentLang);
+  if (currentTag) list = list.filter(s => s.tags.includes(currentTag));
+  if (q) list = list.filter(s =>
+    s.title.toLowerCase().includes(q) ||
+    s.lang.toLowerCase().includes(q) ||
+    s.tags.some(t => t.toLowerCase().includes(q)) ||
+    (s.desc||'').toLowerCase().includes(q)
+  );
+  const sort = document.getElementById('sortSelect').value;
+  if (sort === 'newest') list.sort((a,b) => b.date - a.date);
+  else if (sort === 'oldest') list.sort((a,b) => a.date - b.date);
+  else list.sort((a,b) => a.title.localeCompare(b.title));
+  return list;
+}
+
+function renderSnippets() {
+  const grid = document.getElementById('snippetsGrid');
+  const list = getFiltered();
+  document.getElementById('showing-count').textContent = list.length;
+  if (list.length === 0) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <div class="empty-icon">📭</div>
+      <h3>No snippets found</h3>
+      <p style="margin-top:6px">Try a different search or add a new snippet.</p>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = list.map(s => `
+    <div class="snippet-card${s.fav?' favorited':''}" onclick="openDetail(${s.id})">
+      <div class="card-header">
+        <div class="card-title">${s.title}</div>
+        <div class="card-actions">
+          <button class="copy-btn" onclick="event.stopPropagation();copyCode(${s.id})" title="Copy">📋</button>
+          <button class="fav-btn${s.fav?' active':''}" onclick="event.stopPropagation();toggleFav(${s.id})" title="${s.fav?'Unfavorite':'Favorite'}">${s.fav?'⭐':'☆'}</button>
+        </div>
+      </div>
+      <div class="card-code"><pre>${escHtml(s.code.substring(0,300))}</pre></div>
+      <div class="card-footer">
+        ${getLangBadge(s.lang)}
+        ${s.tags.slice(0,3).map(t=>`<span class="tag-badge">#${t}</span>`).join('')}
+        <span class="card-date">${timeAgo(s.date)}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function timeAgo(ts) {
+  const d = (Date.now() - ts) / 1000;
+  if (d < 60) return 'just now';
+  if (d < 3600) return Math.floor(d/60) + 'm ago';
+  if (d < 86400) return Math.floor(d/3600) + 'h ago';
+  return Math.floor(d/86400) + 'd ago';
+}
+
+function toggleFav(id) {
+  const s = snippets.find(x => x.id === id);
+  if (s) { s.fav = !s.fav; save(); renderSnippets(); }
+}
+
+function copyCode(id) {
+  const s = snippets.find(x => x.id === id);
+  if (s) { navigator.clipboard.writeText(s.code); showToast('Code copied!'); }
+}
+
+function updateSidebar() {
+  const langs = {};
+  const tags = {};
+  snippets.forEach(s => {
+    langs[s.lang] = (langs[s.lang]||0)+1;
+    s.tags.forEach(t => tags[t] = (tags[t]||0)+1);
+  });
+  document.getElementById('count-all').textContent = snippets.length;
+  document.getElementById('count-fav').textContent = snippets.filter(s=>s.fav).length;
+  document.getElementById('lang-sidebar').innerHTML = Object.entries(langs).sort((a,b)=>b[1]-a[1]).map(([l,c])=>`
+    <div class="sidebar-item${currentLang===l?' active':''}" onclick="filterLang('${l}', this)">
+      <div class="lang-dot" style="background:${LANG_COLORS[l]||'#8b949e'}"></div> ${l}
+      <span class="count">${c}</span>
+    </div>`).join('');
+  document.getElementById('tag-sidebar').innerHTML = Object.entries(tags).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([t,c])=>`
+    <div class="sidebar-item${currentTag===t?' active':''}" onclick="filterTag('${t}', this)">
+      # ${t} <span class="count">${c}</span>
+    </div>`).join('');
+}
+
+function filterSidebar(type, el) {
+  currentFilter = type; currentLang = null; currentTag = null;
+  document.querySelectorAll('.sidebar-item').forEach(e=>e.classList.remove('active'));
+  el.classList.add('active');
+  renderSnippets();
+}
+
+function filterLang(lang, el) {
+  currentFilter = 'all'; currentTag = null;
+  currentLang = currentLang === lang ? null : lang;
+  document.querySelectorAll('.sidebar-item').forEach(e=>e.classList.remove('active'));
+  if (currentLang) el.classList.add('active');
+  renderSnippets();
+}
+
+function filterTag(tag, el) {
+  currentFilter = 'all'; currentLang = null;
+  currentTag = currentTag === tag ? null : tag;
+  document.querySelectorAll('.sidebar-item').forEach(e=>e.classList.remove('active'));
+  if (currentTag) el.classList.add('active');
+  renderSnippets();
+}
+
+function openAddModal() {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = 'New Snippet';
+  document.getElementById('f-title').value = '';
+  document.getElementById('f-code').value = '';
+  document.getElementById('f-tags').value = '';
+  document.getElementById('f-desc').value = '';
+  document.getElementById('f-lang').value = 'python';
+  document.getElementById('addModal').classList.add('open'); 
+}
+
+function closeAddModal() {
+  document.getElementById('addModal').classList.remove('open');
+  editingId = null;
+}
+
+function saveSnippet() {
+  const title = document.getElementById('f-title').value.trim();
+  const code = document.getElementById('f-code').value.trim();
+  const lang = document.getElementById('f-lang').value;
+  const tags = document.getElementById('f-tags').value.split(',').map(t=>t.trim().toLowerCase().replace(/\s+/g,'-')).filter(Boolean);
+  const desc = document.getElementById('f-desc').value.trim();
+  if (!title || !code) { showToast('Title and code are required'); return; }
+  if (editingId) {
+    const s = snippets.find(x => x.id === editingId);
+    if (s) { s.title=title; s.lang=lang; s.code=code; s.tags=tags; s.desc=desc; }
+  } else {
+    snippets.unshift({ id: Date.now(), title, lang, code, tags, desc, fav: false, date: Date.now() });
+  }
+  save(); renderSnippets(); closeAddModal();
+  showToast(editingId ? 'Snippet updated!' : 'Snippet saved!');
+}
+
+function openDetail(id) {
+  const s = snippets.find(x => x.id === id);
+  if (!s) return;
+  detailId = id;
+  document.getElementById('d-title').textContent = s.title;
+  document.getElementById('d-date').textContent = new Date(s.date).toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('d-badges').innerHTML = getLangBadge(s.lang) + s.tags.map(t=>`<span class="tag-badge">#${t}</span>`).join('');
+  const codeEl = document.getElementById('d-code');
+  codeEl.textContent = s.code;
+  codeEl.removeAttribute('data-highlighted');
+  hljs.highlightElement(codeEl);
+  document.getElementById('d-fav-btn').textContent = s.fav ? '⭐' : '☆';
+  document.getElementById('d-fav-btn').className = 'fav-btn' + (s.fav?' active':'');
+  document.getElementById('d-desc').textContent = s.desc || '';
+  document.getElementById('detailModal').classList.add('open');
+}
+
+function closeDetail() {
+  document.getElementById('detailModal').classList.remove('open');
+  detailId = null;
+}
+
+function copyDetailCode() {
+  const s = snippets.find(x => x.id === detailId);
+  if (s) { navigator.clipboard.writeText(s.code); showToast('Code copied!'); }
+}
+
+function toggleFavDetail() {
+  const s = snippets.find(x => x.id === detailId);
+  if (s) {
+    s.fav = !s.fav; save(); renderSnippets();
+    document.getElementById('d-fav-btn').textContent = s.fav ? '⭐' : '☆';
+    document.getElementById('d-fav-btn').className = 'fav-btn' + (s.fav?' active':'');
+    showToast(s.fav ? 'Added to favorites!' : 'Removed from favorites');
+  }
+}
+
+function editCurrent() {
+  const s = snippets.find(x => x.id === detailId);
+  if (!s) return;
+  editingId = detailId;
+  closeDetail();
+  document.getElementById('modalTitle').textContent = 'Edit Snippet';
+  document.getElementById('f-title').value = s.title;
+  document.getElementById('f-code').value = s.code;
+  document.getElementById('f-tags').value = s.tags.join(', ');
+  document.getElementById('f-desc').value = s.desc || '';
+  document.getElementById('f-lang').value = s.lang;
+  document.getElementById('addModal').classList.add('open');
+}
+
+function deleteSnippet() {
+  if (!confirm('Delete this snippet?')) return;
+  snippets = snippets.filter(x => x.id !== detailId);
+  save(); renderSnippets(); closeDetail();
+  showToast('Snippet deleted');
+}
+
+document.getElementById('addModal').addEventListener('click', e => { if(e.target===e.currentTarget) closeAddModal(); });
+document.getElementById('detailModal').addEventListener('click', e => { if(e.target===e.currentTarget) closeDetail(); });
+document.addEventListener('keydown', e => {
+  if (e.key==='Escape') { closeAddModal(); closeDetail(); }
+});
+
+updateSidebar();
+renderSnippets();
+</script>
+</body>
+</html>
