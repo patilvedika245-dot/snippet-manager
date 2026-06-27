@@ -193,7 +193,7 @@
       </div>
     </div>
     <div style="padding:14px 24px;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--border)" id="d-badges"></div>
-    <div class="detail-code"><pre id="d-code" class="hljs"></pre></div>
+    <div class="detail-code"><pre><code id="d-code"></code></pre>></div>
     <div style="padding:16px 24px;display:flex;gap:10px;align-items:center">
       <button class="btn btn-primary btn-sm" onclick="copyDetailCode()">📋 Copy code</button>
       <button class="fav-btn" id="d-fav-btn" onclick="toggleFavDetail()" style="font-size:20px"></button>
@@ -404,16 +404,13 @@ function saveSnippet() {
 }
 
 function openDetail(id) {
-  const s = snippets.find(x => x.id === id);
-  if (!s) return;
-  detailId = id;
-  document.getElementById('d-title').textContent = s.title;
-  document.getElementById('d-date').textContent = new Date(s.date).toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'});
-  document.getElementById('d-badges').innerHTML = getLangBadge(s.lang) + s.tags.map(t=>`<span class="tag-badge">#${t}</span>`).join('');
   const codeEl = document.getElementById('d-code');
-  codeEl.textContent = s.code;
-  codeEl.removeAttribute('data-highlighted');
-  hljs.highlightElement(codeEl);
+
+codeEl.className = `language-${s.lang}`;
+codeEl.textContent = s.code;
+codeEl.removeAttribute('data-highlighted');
+
+hljs.highlightElement(codeEl);
   document.getElementById('d-fav-btn').textContent = s.fav ? '⭐' : '☆';
   document.getElementById('d-fav-btn').className = 'fav-btn' + (s.fav?' active':'');
   document.getElementById('d-desc').textContent = s.desc || '';
