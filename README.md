@@ -22,10 +22,14 @@ Online Code Snippet Manager is a web application that allows users to save, orga
 - JavaScript
 - Highlight.js
 
-## How to Run
-1. Download or clone the repository.
-2. Open `online_code_snippet_manager.html` in any modern web browser.
-3. Start using the application.
+## How to Use
+
+1. Open the application in your browser.
+2. Click **New Snippet** to add code.
+3. Enter the title, language, tags, and code.
+4. Save the snippet.
+5. Use the search bar to find snippets.
+6. Mark important snippets as favorites.
 
 ## Team Members
 - Vedika Patil
