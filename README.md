@@ -31,6 +31,13 @@ Online Code Snippet Manager is a web application that allows users to save, orga
 5. Use the search bar to find snippets.
 6. Mark important snippets as favorites.
 
+## Future Improvements
+1. Search functionality
+2. Dark mode support
+3. cloud storage integration
+4. Share snippets using a unique link
+5. Support for more programming languages
+
 ## Team Members
 - Vedika Patil
 - Sonali Shirodkar
