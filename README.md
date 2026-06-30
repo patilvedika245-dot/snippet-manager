@@ -57,6 +57,12 @@ snippet-manager/
 4. Share snippets using a unique link
 5. Support for more programming languages
 
+## Challenges Faced
+- Designing a responsive user interface.
+- Managing snippet categories and tags.
+- Implementing search functionality.
+- Integrating syntax highlighting.
+
 ## Team Members
 - Vedika Patil
 - Sonali Shirodkar
