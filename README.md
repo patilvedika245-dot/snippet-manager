@@ -2,7 +2,7 @@
 # Online Code Snippet Manager
 
 ## Description
-Online Code Snippet Manager is a web application that allows users to save, organize, search, edit, and manage code snippets efficiently.
+Online Code Snippet Manager is a web application designed to help programmers and students save, organize, and manage their code snippets efficiently. Users can store snippets in different programming languages, categorize them using tags, search for specific snippets, and mark important snippets as favorites. The application provides a clean and user-friendly interface, making it easier to access and reuse code whenever needed.
 
 ## Features
 - Add new code snippets
