@@ -62,6 +62,8 @@ snippet-manager/
 - Managing snippet categories and tags.
 - Implementing search functionality.
 - Integrating syntax highlighting.
+![alt text](image.png)
+![alt text](image-1.png)
 
 ## Team Members
 - Vedika Patil
