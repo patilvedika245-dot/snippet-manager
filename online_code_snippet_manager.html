@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SnipVault - Code Snippet Manager</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -116,7 +116,7 @@
     <div class="search-bar">
       <div class="search-wrap">
         <span class="search-icon">🔍</span>
-        <input class="search-input" id="searchInput" placeholder="Search snippets by title, tag, or language..." oninput="renderSnippets()">
+        <input class="search-input" id="searchInput" placeholder="Search snippets by title, tag, or language..." autocomplete="off" oninput="renderSnippets()">
       </div>
       <select class="btn field-select" style="width:140px" id="sortSelect" onchange="renderSnippets()">
         <option value="newest">Newest first</option>
@@ -287,7 +287,7 @@ function renderSnippets() {
     return;
   }
   grid.innerHTML = list.map(s => `
-    <div class="snippet-card${s.fav?' favorited':''}" onclick="openDetail(${s.id})">
+   <div class="snippet-card${s.fav?' favorited':''}" onclick="openDetail(${s.id})">
       <div class="card-header">
         <div class="card-title">${s.title}</div>
         <div class="card-actions">
@@ -295,7 +295,7 @@ function renderSnippets() {
           <button class="fav-btn${s.fav?' active':''}" onclick="event.stopPropagation();toggleFav(${s.id})" title="${s.fav?'Unfavorite':'Favorite'}">${s.fav?'⭐':'☆'}</button>
         </div>
       </div>
-      <div class="card-code"><pre>${escHtml(s.code.substring(0,300))}</pre></div>
+      <div class="card-code"><pre><code class="language-${s.lang}">${escHtml(s.code.substring(0,300))}</code></pre></div>
       <div class="card-footer">
         ${getLangBadge(s.lang)}
         ${s.tags.slice(0,3).map(t=>`<span class="tag-badge">#${t}</span>`).join('')}
@@ -378,7 +378,7 @@ function openAddModal() {
   document.getElementById('f-tags').value = '';
   document.getElementById('f-desc').value = '';
   document.getElementById('f-lang').value = 'python';
-  document.getElementById('addModal').classList.add('open'); 
+  document.getElementById('addModal').classList.add('open');
 }
 
 function closeAddModal() {
@@ -405,11 +405,9 @@ function saveSnippet() {
 
 function openDetail(id) {
   const codeEl = document.getElementById('d-code');
-
-codeEl.className = `language-${s.lang}`;
 codeEl.textContent = s.code;
-codeEl.removeAttribute('data-highlighted');
-
+codeEl.className = `language-${s.lang}`;
+codeEl.removeAttribute("data-highlighted");
 hljs.highlightElement(codeEl);
   document.getElementById('d-fav-btn').textContent = s.fav ? '⭐' : '☆';
   document.getElementById('d-fav-btn').className = 'fav-btn' + (s.fav?' active':'');
